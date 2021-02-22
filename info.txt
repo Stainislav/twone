@@ -1,0 +1,18 @@
+// Install pipenv.
+stanislav@stanislav-X200MA:~$ mkdir Dev
+stanislav@stanislav-X200MA:~$ cd Dev
+stanislav@stanislav-X200MA:~/Dev$ python3.8 -m pip install pipenv --upgrade
+
+// Install django into pipenv.
+stanislav@stanislav-X200MA:~/Dev$ mkdir tweetme2
+stanislav@stanislav-X200MA:~/Dev/tweetme2$ cd tweetme2
+stanislav@stanislav-X200MA:~/Dev/tweetme2$ pipenv install --python 3.8 django==2.2
+stanislav@stanislav-X200MA:~/Dev/tweetme2$ pipenv shell
+
+// Create a django project in a current directory.
+(tweetme2)$ django-admin startproject tweetme2 .
+
+// Initialize a github repository.
+(tweetme2)$ git init
+(tweetme2)$ git add --all
+(tweetme2)$ git commit -m "Initial Commit"
