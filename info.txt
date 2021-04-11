@@ -16,3 +16,217 @@ stanislav@stanislav-X200MA:~/Dev/tweetme2$ pipenv shell
 (tweetme2)$ git init
 (tweetme2)$ git add --all
 (tweetme2)$ git commit -m "Initial Commit"
+
+
+Python: 
+
+    is_safe_url(url, ALLOWED_HOSTS) - выясняет, соответствует ли урл списку допустимых хостов
+
+
+Django:
+
+    obj = form.save(commit=False) - позволяет создать объект формы, при этом не сохраняя 
+    форму в базу данных. Таким образом, можно перед сохраннением формы провести
+    любые другие манипуляции.
+
+    form.is_valid() - валидирует объект form, проверяя все его поля. Выводит True или False.
+
+Формы в Django:
+
+    class TweetForm(forms.ModelForm):
+        // Класс Meta это внутренний класс в моделях Джанго. В нём определяются различные опции, 
+        // привязанные к модели. В данном случае, мы определяем поля формы и модель, с которой связана данная форма
+        class Meta: 
+            model = Tweet - модель. При сохранении формы, будет создаваться новый экземляр класса Tweet с данными, которые были введеные через форму.
+            fields = ['content'] - указываем поля формы
+
+    // Для того, чтобы можно было использовать ф-цию is_valid, необходимо, чтобы данные были очищены
+    // Это можно сделать, если внутри модели объявить функцию вида clean_наименованиеПоля. Тогда при вызове
+    // is_valid Джанго будет проверять поле, используя объявленную нами ф-цию. В примере ниже мы осуществляем 
+    // проверку введённое количество символов.
+
+    def clean_content(self): 
+        content = self.cleaned_data.get('content') - получаем очищенные данные, то есть содержание поля 'content'
+        if len(content) > MAX_LENGTH:
+            raise forms.ValidationError('This tweet is too long')
+        return content
+
+Django Rest Framework:
+
+    (tweetme2)$ pipenv install djangorestframework
+    @api_view(['POST']) - добавляем такой декоратор, если хотим, чтобы наша вьюха
+    поддерживала только метод POST
+
+    qs = Tweet.objects.all()
+    serializer = TweetSerializer(qs, many=True) - указываем сериализатору, что нужно обработать qs,
+    как объект со множеством айтемов.
+
+    Можно переопределить метод validate для сериализатора таким образом: .validate_<field_name>
+    Например:
+    def validate_title():
+
+
+JavaScript:
+    
+    FormData() - используется для создания объекта, который представляет
+    данные HTML-формы
+    
+    AJAX-запросы:
+
+    ПЕРВЫЙ ВАРИАНТ:
+
+    function reqListener () {
+        console.log(this.responseText); - получаем ответ от сервера
+    }
+    const xhr = new XMLHttpRequest();                      - создаём объект для отправки ajax-запроса к серверу
+    xhr.addEventListener("load", reqListener);             - добавляем листенер, который будет запускать ф-цию, когда услышит событие
+    xhr.open("GET", "http://www.example.org/example.txt"); - открываем url, используя нужный нам метод (GET, POST etc...)
+    xhr.send();                                            - отправляем запрос. В скобках можно передать какие-то данные.
+
+    ВТОРОЙ ВАРИАНТ:
+    
+    function reqListener (event) {
+        // Внутри можно использовать объект event, если необходимо
+        const xhr = new XMLHttpRequest();                      - создаём объект для отправки ajax-запроса к серверу
+        xhr.open("GET", "http://www.example.org/example.txt"); - открываем url, используя нужный нам метод (GET, POST etc...)
+        xhr.onload = function() {
+            const serverResponse = xhr.response                - получаем ответ от сервера.
+        }
+        xhr.send();                                            - отправляем запрос. В скобках можно передать какие-то данные.
+    }
+    xhr.addEventListener("load", reqListener);                 - добавляем листенер, который будет запускать ф-цию, когда услышит событие
+
+    const csrftoken = getCookie('csrftoken');
+    xhr.setRequestHeader("X-CSRFToken", csrftoken) - для того, чтобы при каждом запросе
+    отправлялся CSRF-token.
+    
+    
+    Фронтенд
+    
+    HTML:
+
+    HTML-форма (Bootstrap) 
+    С помощью JS получаем доступ 
+    JavaScript
+
+    Бэкенд
+
+    Django
+    DRF
+
+
+АРХИТЕКТУРА
+
+home.html:
+
+1. При загрузке страницы получаем достпу к div по id='tweets'.
+   Затем при помощи ф-ции loadTweets() отправляем AJAX-запрос, получаем твиты и вставляем их на страницу.
+
+2. Получаем доступ к форме по id='tweet-create-form'
+   Слушаем событие submit. Когда происходит событие submit, вызываем ф-цию handleTweetCreateFormDidSubmit, к-я
+   отправляет AJAX-запрос '/create-tweet'. В рез-те мы получаем список твитов и вставляем их на страницу.
+
+
+urls.py:
+
+'admin/'                           -> admin.site.urls - показывает админку
+''                                 -> home_view - показывает домашнюю страницу
+'create-tweet'                     -> tweet_create_view - создаёт твит и возвращает его
+'tweets'                           -> tweet_list_view - возвращает список всех твитов
+'tweets/<int:tweet_id>'            -> tweet_detail_view - возвращает инфу для конкретного твита
+'api/tweets/action'         -> tweet_action_view - совершает необходимое действие над твитом (лайлк, анлайк, ретвит)
+'api/tweets/<int:tweet_id>/delete' -> tweet_delete_view - удаляет конкретный твит
+
+
+
+views.py:
+
+Пользователь не должен быть авторизован:
+
+    def home_view(request, *args, **kwargs): - принимает request и рендерит html-шаблон home.html
+    def tweet_detail_view(request, tweet_id, *args, **kwargs): - принимает GET-запрос и id твита, ищет этот твит в БД и возвращает его в виде JSON
+    
+Пользователь должен быть авторизован:
+
+    def tweet_create_view(request, *args, **kwargs) - принимает POST-запрос, сохраняет твит в БД, возвращает твит в виде JSON
+
+    def tweet_delete_view(request, tweet_id, *args, **kwargs): - принимает DELETE-запрос и id твита,
+        удаляет этот твит из БД и возвращает сообщение о том, что данный твит был удалён
+
+    def tweet_action_view(request, *args, **kwargs): - принимает POST-запрос, извлекает из запроса id твита и тип действия, который необходимо совершить над твитом,
+        далее совершает необхоимое действие: добавить лайк, удалить лайк, совершить ретвит.
+        Возвращает сообщение о том, что действие над твитом выполнено.
+    
+    def tweet_list_view(request, *args, **kwargs) - принимает GET-запрос, извлекает все твиты из БД и возвращает их в виде JSON
+    
+Декораторы:
+
+@api_view(['POST']) - позволяет указать, какой именно запрос доступен для данной ф-ции
+@permission_classes([IsAuthenticated] - ф-цию сможет использовать только авторизованный пользователь
+
+    Например:
+
+    @api_view(['POST'])
+    @permission_classes([IsAuthenticated]
+    def tweet_create_view(request, *args, **kwargs):
+        pass
+
+
+Сериализаторы:
+
+Сериализаторы позволяют конвертировать сложные типы данных (например Queryset) в типы данных Python, к-е могут быть 
+легко конвертированы в JSON, XML или другие типы. 
+
+Также сериализаторы поддерживают обратный процесс конвертации в сложные типы данных.
+
+
+
+Создаём класс сериализатор:
+
+class TweetSerializer(serializers.ModelSerializer):
+    # Здесь пишем наш код
+    pass
+
+Создаём объект сериализатор:
+
+serializer = TweetSerializer(tweetObj)
+
+Вот так выглядит объект сериализатора:
+
+print(serializer)
+TweetSerializer(<Tweet: j>):
+    id = IntegerField(label='ID', read_only=True)
+    content = CharField(allow_blank=True, allow_null=True, required=False, style={'base_template': 'textarea.html'})
+    likes = SerializerMethodField(read_only=True)
+
+Вот так выглядит свойство data:
+
+print(serializer.data)
+{"id":77,"content":"j","likes":1}
+
+
+Тесты в Джанго:
+
+Имя ф-ции, к-я осуществляет тестирование должна начинаться на test_
+
+Ф-ции setUp() и tearDown() позволяют указать инструкции, к-е будут выполняться до и после каждого теста.
+
+class TweetTestCase(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username='cfe', password='somepassword')
+
+    def test_tweet_created(self):
+        tweet_obj = Tweet.objects.create(content='my tweet', user=self.user)
+        self.assertEqual(tweet_obj.id, 1)
+        self.assertEqual(tweet_obj.user, self.user)
+
+Node.JS
+
+sudo apt install npm
+npm --version
+
+Создание react-приложщения:
+    npx create-react-app tweetme2-web
+
+Альтернативный вариант для создания react-приложения:
+    npm init react-app tweetme-delete
